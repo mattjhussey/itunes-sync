@@ -5,7 +5,7 @@ import py
 import pytest
 import shutil
 import itunessync.itunessync
-from itunessync.itunessync import doStuff, getExtensionFiles
+from itunessync.itunessync import do_stuff, get_extension_files
 
 
 def test_valid_file(tmpdir, itunes_valid, itunes_music_valid):
@@ -17,26 +17,30 @@ def test_valid_file(tmpdir, itunes_valid, itunes_music_valid):
     notneeded = sdcard / 'notneeded'
     notneeded.mkdir()
     notneeded.join('notneeded.m4a').write('delete')
-    real_getExtensionFiles = getExtensionFiles
+    real_get_extension_files = get_extension_files
     real_osRemove = os.remove
+
     def mock_copy(src, target):
         py.path.local('..' + src[2:]).copy(py.path.local(target))
-    def mock_getExtensionFiles(extension):
-        found = set(['.\\' + f[1:] for f in real_getExtensionFiles(extension)])
+
+    def mock_get_extension_files(extension):
+        found = set(['.\\' + f[1:] for f in real_get_extension_files(extension)])
         return found
+
     def mock_remove(file):
         if file.startswith('.\/'):
             real_osRemove(file[3:])
         else:
             real_osRemove(file)
     with patch.object(shutil, 'copy') as file_copy, \
-           patch.object(itunessync.itunessync, 'getExtensionFiles') as getExFiles, \
-           patch.object(os, 'remove') as os_remove, \
-           sdcard.as_cwd():
+            patch.object(itunessync.itunessync,
+                         'get_extension_files') as getExFiles, \
+            patch.object(os, 'remove') as os_remove, \
+            sdcard.as_cwd():
         file_copy.side_effect = mock_copy
-        getExFiles.side_effect = mock_getExtensionFiles
+        getExFiles.side_effect = mock_get_extension_files
         os_remove.side_effect = mock_remove
-        doStuff(str(itunes_valid), 'tocopy')
+        do_stuff(str(itunes_valid), 'tocopy')
 
 
 @pytest.fixture
