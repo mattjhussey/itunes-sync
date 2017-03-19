@@ -1,0 +1,1 @@
+python setup.py register sdist bdist bdist_dumb bdist_wininst bdist_wheel upload -r pypi
