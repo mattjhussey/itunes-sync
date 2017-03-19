@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Convert to the pybaseline structure
+desc: Copy the latest version of pybaseline into the repository. It is expected that this will result in testing errors and/or less than full test coverage.
+type: :task
+component: itunessync
+release: 
+reporter: Matthew Hussey <matthew.hussey@googlemail.com>
+status: :unstarted
+disposition: 
+creation_time: 2017-03-19 15:40:59.758253 Z
+references: []
+
+id: afef7f71888f77ae255f8c59e37aa28a77f113f2
+log_events: 
+- - 2017-03-19 15:40:59.820676 Z
+  - Matthew Hussey <matthew.hussey@googlemail.com>
+  - created
+  - ""
