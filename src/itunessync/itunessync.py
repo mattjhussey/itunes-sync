@@ -4,7 +4,15 @@ import os
 import urllib
 import codecs
 
-dirtyChars = {"?": "_", "/": "_", ":": "_", "<": "_", "\"": "_", "*": "_", "|": "_"}
+dirtyChars = {
+    "?": "_",
+    "/": "_",
+    ":": "_",
+    "<": "_",
+    "\"": "_",
+    "*": "_",
+    "|": "_"}
+
 
 def sanitizeString(s):
     s = s.strip()
@@ -13,6 +21,7 @@ def sanitizeString(s):
     if s[len(s) - 1] == '.':
         s = s[:-1] + "_"
     return s
+
 
 def getExtensionFiles(extension):
     found = set()
@@ -24,8 +33,10 @@ def getExtensionFiles(extension):
                 found.add(coded.lower())
     return found
 
+
 def getM4aFiles():
     return getExtensionFiles(".m4a")
+
 
 def check(expected):
     onDrive = getM4aFiles()
@@ -37,6 +48,7 @@ def check(expected):
             print "%s is missing" % repr(f)
     for f in onDrive:
         print "%s should not exist" % repr(f)
+
 
 def readItunesLibrary(xmlPath):
     context = ET.iterparse(xmlPath, events=("start", "end"))
@@ -90,6 +102,7 @@ def readItunesLibrary(xmlPath):
         elem.clear()
     return rootDict
 
+
 def getWantedTrackIds(playlist):
     # Find the S3 playlist Track IDs
     trackIDs = set()
@@ -101,12 +114,12 @@ def getWantedTrackIds(playlist):
         trackIDs.add(trackId)
     return trackIDs
 
+
 def getWantedTracks(tracks):
     # Find each file to move
     trackInfo = dict()
     for trackId, track in tracks.iteritems():
-    
-        name = track["Name"]
+
         album = track["Album"]
         artist = track["Artist"]
         location = urllib.unquote(track["Location"][17:])
@@ -142,12 +155,14 @@ def getWantedTracks(tracks):
         trackInfo[trackId] = trackData
     return trackInfo
 
+
 def deleteFiles(files):
     fileCount = len(files)
     statement = "Deleting %%d of %d: %%s" % fileCount
     for n, file in enumerate(files):
         print statement % (n+1, repr(file))
         os.remove(file)
+
 
 def copyFiles(copyTasks):
     copyCount = len(copyTasks)
@@ -158,6 +173,7 @@ def copyFiles(copyTasks):
         print statement % (n+1, repr(target))
         shutil.copy(source, target)
 
+
 def findEmptyDirectories():
     dirs = set()
     for r, d, files in os.walk(u"."):
@@ -167,12 +183,14 @@ def findEmptyDirectories():
             dirs.add(r)
     return dirs
 
+
 def deleteDirectories(directories):
     directoryCount = len(directories)
     statement = "Remove empty directory %%d of %d: %%s" % directoryCount
     for n, directory in enumerate(directories):
         print statement % (n, repr(directory))
         shutil.rmtree(directory)
+
 
 def createDirectories(directories):
     directoryCount = len(directories)
@@ -181,8 +199,10 @@ def createDirectories(directories):
         print statement % (n+1, repr(directory))
         os.makedirs(directory)
 
+
 def findM3us():
     return getExtensionFiles(".m3u")
+
 
 def buildM3us(playlists, tracks):
     # Create m3us for playlists containing any of these files
@@ -200,7 +220,7 @@ def buildM3us(playlists, tracks):
                 orderedTracks.append(trackId)
             # Get intersection or trackIDs and playlistTracks
             copiedInPlaylist = trackIds.intersection(playlistTracks)
-            if(len(copiedInPlaylist) > 0):
+            if len(copiedInPlaylist) > 0:
                 # Write m3u
                 filename = "%s.m3u" % sanitizeString(playlist["Name"])
                 with codecs.open(filename, "w", "utf-8-sig") as file:
@@ -210,30 +230,40 @@ def buildM3us(playlists, tracks):
                             trackPath = tracks[trackId]
                             file.write("%s\n" % trackPath)
 
+
 def doStuff(xmlPath, playlistName):
     print "Reading iTunes Library"
     library = readItunesLibrary(xmlPath)
     print "Finding %s Playlist" % playlistName
-    s3List = [playlist for playlist in library["root"]["Playlists"] if playlist["Name"] == playlistName][0]
+    s3List = [playlist
+              for playlist in library["root"]["Playlists"]
+              if playlist["Name"] == playlistName][0]
     print "Finding wanted Track Ids"
     trackIds = getWantedTrackIds(s3List)
     print "Finding wanted Tracks"
-    tracks = dict([(id, value) for id, value in library["root"]["Tracks"].iteritems() if id in trackIds])
+    tracks = dict([(id, value)
+                   for id, value in library["root"]["Tracks"].iteritems()
+                   if id in trackIds])
     print "Extracting Track Info"
     trackInfo = getWantedTracks(tracks)
     print "Finding existing files"
     existingFiles = getM4aFiles()
     print "Finding excess files"
-    sourceFiles = set([trackData["WalkPath"] for trackData in trackInfo.itervalues()])
+    sourceFiles = set([trackData["WalkPath"]
+                       for trackData in trackInfo.itervalues()])
     excessFiles = existingFiles.difference(sourceFiles)
     print "Deleting excess files"
     deleteFiles(excessFiles)
     print "Creating required directories"
-    requiredDirectories = set([trackData["Directory"] for trackData in trackInfo.itervalues() if not os.path.exists(trackData["Directory"])])
+    requiredDirectories = set([trackData["Directory"]
+                               for trackData in trackInfo.itervalues()
+                               if not os.path.exists(trackData["Directory"])])
     createDirectories(requiredDirectories)
     print "Copying new files"
     existingFiles = existingFiles.difference(excessFiles)
-    copyTasks = dict([(ti["Path"], ti["Source"]) for ti in trackInfo.itervalues() if ti["WalkPath"] not in existingFiles])
+    copyTasks = dict([(ti["Path"], ti["Source"])
+                      for ti in trackInfo.itervalues()
+                      if ti["WalkPath"] not in existingFiles])
     copyFiles(copyTasks)
     print "Find empty directories"
     emptyDirs = findEmptyDirectories()
@@ -244,11 +274,13 @@ def doStuff(xmlPath, playlistName):
     deleteFiles(existingM3us)
     print "Writing new m3us"
     playlists = library["root"]["Playlists"]
-    trackPaths = dict([(id, track["Path"]) for id, track in trackInfo.iteritems()])
+    trackPaths = dict([(id, track["Path"])
+                       for id, track in trackInfo.iteritems()])
     buildM3us(playlists, trackPaths)
     print "Checking"
     check(sourceFiles)
     print "%d to copy and %d exist" % (len(sourceFiles), len(getM4aFiles()))
+
 
 if __name__ == "__main__":
     doStuff(os.sys.argv[1], os.sys.argv[2])
