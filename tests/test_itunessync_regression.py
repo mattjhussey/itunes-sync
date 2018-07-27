@@ -24,7 +24,8 @@ def test_valid_file(tmpdir, itunes_valid, itunes_music_valid):
         py.path.local('..' + src[2:]).copy(py.path.local(target))
 
     def mock_get_extension_files(extension):
-        found = set(['.\\' + f[1:] for f in real_get_extension_files(extension)])
+        found = set(['.\\' + f[1:]
+                     for f in real_get_extension_files(extension)])
         return found
 
     def mock_remove(file):

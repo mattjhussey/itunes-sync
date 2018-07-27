@@ -267,9 +267,10 @@ def do_stuff(xml_path, playlist_name):
     print "Deleting excess files"
     delete_files(excess_files)
     print "Creating required directories"
-    required_directories = set([track_data["Directory"]
-                                for track_data in track_info.itervalues()
-                                if not os.path.exists(track_data["Directory"])])
+    required_directories = set(
+        [track_data["Directory"]
+         for track_data in track_info.itervalues()
+         if not os.path.exists(track_data["Directory"])])
     create_directories(required_directories)
     print "Copying new files"
     existing_files = existing_files.difference(excess_files)
