@@ -1,74 +1,87 @@
-from mock import patch
-import os
 from os.path import dirname, realpath
 import py
 import pytest
-import shutil
-import itunessync.itunessync
-from itunessync.itunessync import do_stuff, get_extension_files
+import sys
+from mock import patch
+from robber import expect
+from itunessync.__main__ import main
 
 
-def test_valid_file(tmpdir, itunes_valid, itunes_music_valid):
-    sdcard = tmpdir / 'sdcard'
-    sdcard.mkdir()
-    todelete = sdcard / 'todelete'
-    todelete.mkdir()
-    todelete.join('albumart.pamp').write('delete')
-    notneeded = sdcard / 'notneeded'
-    notneeded.mkdir()
-    notneeded.join('notneeded.m4a').write('delete')
-    real_get_extension_files = get_extension_files
-    real_osRemove = os.remove
+def test_music_copied_to_empty_dir(itunes_library_xml, tmpdir, local_test_dir):
+    # Create populated sdcard directory
+    sdcard = tmpdir.mkdir('sdcard')
 
-    def mock_copy(src, target):
-        py.path.local('..' + src[2:]).copy(py.path.local(target))
+    # Create an old m3u file
+    sdcard.join('old.m3u').write('old')
 
-    def mock_get_extension_files(extension):
-        found = set(['.\\' + f[1:]
-                     for f in real_get_extension_files(extension)])
-        return found
+    # Create an empty directory expected to be deleted
+    todelete_empty = sdcard.mkdir('todelete_empty')
 
-    def mock_remove(file):
-        if file.startswith('.\/'):
-            real_osRemove(file[3:])
-        else:
-            real_osRemove(file)
-    with patch.object(shutil, 'copy') as file_copy, \
-            patch.object(itunessync.itunessync,
-                         'get_extension_files') as getExFiles, \
-            patch.object(os, 'remove') as os_remove, \
-            sdcard.as_cwd():
-        file_copy.side_effect = mock_copy
-        getExFiles.side_effect = mock_get_extension_files
-        os_remove.side_effect = mock_remove
-        do_stuff(str(itunes_valid), 'tocopy')
+    # Create a folder with pamp file expected to be deleted
+    todelete_pamp = sdcard.mkdir('todelete_pamp')
+    todelete_pamp.join('albumart.pamp').write('delete')
+
+    # Create a folder with unneeded music expected to be deleted
+    todelete_noneed = sdcard.mkdir('todelete_noneed')
+    todelete_noneed.join('unwanted.m4a').write('delete')
+
+    sys_args = ['exe.exe', str(itunes_library_xml), 'tocopy']
+    with patch.object(sys, 'argv', sys_args), \
+         sdcard.as_cwd():
+        main()
+
+    # Expect empty directories to be removed
+    expect(todelete_empty.check()).to.be.false()
+    expect(todelete_pamp.check()).to.be.false()
+    expect(todelete_noneed.check()).to.be.false()
+
+    # Expect music to have been copied
+    expect((sdcard / 'Someone_' / 'An Album').join('a.mp3').check()).to.be.true()
+    expect((sdcard / 'Someone' / 'An Album').join('b.m4a').check()).to.be.true()
+    expect((sdcard / 'Someone' / 'An Album').join('c.m4a').check()).to.be.true()
+    expect((sdcard / 'Someone' / 'An Album').join('d.m4a').check()).to.be.true()
+    expect((sdcard / 'Someone' / 'An Album').join('e.m4a').check()).to.be.true()
+
+    # Expect m3u files to have been deleted if old
+    expect(sdcard.join('old.m3u')).to.be.false()
+
+    # Expect m3u files to have been created
+    expect(sdcard.join('Alter Bridge.m3u').check()).to.be.true()
+    expect(sdcard.join('Library.m3u').check()).to.be.true()
+    expect(sdcard.join('Music.m3u').check()).to.be.true()
+    expect(sdcard.join('something.m3u').check()).to.be.true()
+    expect(sdcard.join('tocopy.m3u').check()).to.be.true()
+
+    # Expect m3u files to contain correct data
+    expect(sdcard.join('Alter Bridge.m3u').readlines()).to.eq(local_test_dir.join('Alter Bridge.m3u').readlines())
+    expect(sdcard.join('Library.m3u').readlines()).to.eq(local_test_dir.join('Library.m3u').readlines())
+    expect(sdcard.join('Music.m3u').readlines()).to.eq(local_test_dir.join('Music.m3u').readlines())
+    expect(sdcard.join('something.m3u').readlines()).to.eq(local_test_dir.join('something.m3u').readlines())
+    expect(sdcard.join('tocopy.m3u').readlines()).to.eq(local_test_dir.join('tocopy.m3u').readlines())
+    
+
+# Test with a playlist that doesn't exist
 
 
 @pytest.fixture
-def local_dir():
+def local_test_dir():
     return py.path.local(dirname(realpath(__file__)))
 
 
 @pytest.fixture
-def itunes_valid(local_dir, tmpdir):
-    fixture = local_dir / 'itunes_valid.xml'
+def itunes_library_xml(local_test_dir, tmpdir):
+    # Copy the xml library to the temporary directory
+    real_library_xml = local_test_dir / 'itunes_valid.xml'
     target = tmpdir / 'itunes_valid.xml'
-    fixture.copy(target)
+    real_library_xml.copy(target)
+
+    # Replace the {{musicdir}} placeholders with the directory
+    # of the real music files
+    with open(str(target), 'r') as f:
+        data = f.read()
+    music_dir_path = str(local_test_dir).replace('\\', '/')
+    data = data.replace('{{musicdir}}', music_dir_path)
+    with open(str(target), 'w') as f:
+        f.write(data)
+
     return target
-
-
-@pytest.fixture
-def itunes_music_valid(local_dir, tmpdir):
-    music_dir = tmpdir / 'music'
-    music_dir.mkdir()
-    files = (
-        'a.m4a',
-        'b.m4a',
-        'c.m4a',
-        'd.m4a',
-        'e.m4a',)
-    for f in files:
-        source = local_dir / f
-        target = music_dir / f
-        source.copy(target)
-    return music_dir

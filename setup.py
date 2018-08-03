@@ -51,7 +51,7 @@ def main():
             "Natural Language :: English",
             "Programming Language :: Python :: 2.7"],
         setup_requires=['pytest-runner'],
-        tests_require=['mock', 'pytest-catchlog', 'pytest-cov', 'robber', 'pytest']
+        tests_require=['mock', 'pytest-cov', 'robber', 'pytest']
     )
 
 if __name__ == "__main__":

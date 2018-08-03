@@ -12,6 +12,7 @@
 ^\.ditz-cache$
 
 # Test environments
+^\.pytest_cache/.*$
 ^.*\.tox/.*$
 ^.eggs/.*$
 ^.*\.egg-info/.*$

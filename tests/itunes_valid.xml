@@ -41,7 +41,7 @@
 			<key>Kind</key><string>MPEG audio file</string>
 			<key>Comments</key><string>a file</string>
 			<key>Sort Album</key><string>An Album</string>
-			<key>Location</key><string>file://localhost/C:/music/a.m4a</string>
+			<key>Location</key><string>file://localhost/{{musicdir}}/a.mp3</string>
 		</dict>
 		<key>78</key>
 		<dict>
@@ -75,7 +75,7 @@
 			<key>Comments</key><string>b file</string>
 			<key>Sort Name</key><string>B Song</string>
 			<key>Sort Album</key><string>An Album</string>
-			<key>Location</key><string>file://localhost/C:/music/b.m4a</string>
+			<key>Location</key><string>file://localhost/{{musicdir}}/b.m4a</string>
 		</dict>
 		<key>80</key>
 		<dict>
@@ -109,7 +109,7 @@
 			<key>Comments</key><string>c file</string>
 			<key>Sort Name</key><string>C Song</string>
 			<key>Sort Album</key><string>An Album</string>
-			<key>Location</key><string>file://localhost/C:/music/c.m4a</string>
+			<key>Location</key><string>file://localhost/{{musicdir}}/c.m4a</string>
 		</dict>
 		<key>82</key>
 		<dict>
@@ -142,7 +142,7 @@
 			<key>Kind</key><string>MPEG audio file</string>
 			<key>Comments</key><string>d file</string>
 			<key>Sort Album</key><string>An Album</string>
-			<key>Location</key><string>file://localhost/C:/music/d.m4a</string>
+			<key>Location</key><string>file://localhost/{{musicdir}}/d.m4a</string>
 		</dict>
 		<key>84</key>
 		<dict>
@@ -175,7 +175,7 @@
 			<key>Kind</key><string>MPEG audio file</string>
 			<key>Comments</key><string>e file</string>
 			<key>Sort Album</key><string>An Album</string>
-			<key>Location</key><string>file://localhost/C:/music/e.m4a</string>
+			<key>Location</key><string>file://localhost/{{musicdir}}/e.m4a</string>
 		</dict>
 		<key>86</key>
 		<dict>
@@ -208,7 +208,7 @@
 			<key>Kind</key><string>MPEG audio file</string>
 			<key>Comments</key><string>f file</string>
 			<key>Sort Album</key><string>An Album</string>
-			<key>Location</key><string>file://localhost/C:/music/f.m4a</string>
+			<key>Location</key><string>file://localhost/{{musicdir}}/f.m4a</string>
 		</dict>
 		<key>88</key>
 		<dict>
@@ -241,7 +241,7 @@
 			<key>Kind</key><string>MPEG audio file</string>
 			<key>Comments</key><string>g file</string>
 			<key>Sort Album</key><string>An Album</string>
-			<key>Location</key><string>file://localhost/C:/music/g.m4a</string>
+			<key>Location</key><string>file://localhost/{{musicdir}}/g.m4a</string>
 		</dict>
 		<key>90</key>
 		<dict>
@@ -274,7 +274,7 @@
 			<key>Kind</key><string>MPEG audio file</string>
 			<key>Comments</key><string>h file</string>
 			<key>Sort Album</key><string>An Album</string>
-			<key>Location</key><string>file://localhost/C:/music/h.m4a</string>
+			<key>Location</key><string>file://localhost/{{musicdir}}/h.m4a</string>
 		</dict>
 		<key>92</key>
 		<dict>
@@ -307,7 +307,7 @@
 			<key>Kind</key><string>MPEG audio file</string>
 			<key>Comments</key><string>i file</string>
 			<key>Sort Album</key><string>An Album</string>
-			<key>Location</key><string>file://localhost/C:/music/i.m4a</string>
+			<key>Location</key><string>file://localhost/{{musicdir}}/i.m4a</string>
 		</dict>
 		<key>94</key>
 		<dict>
@@ -340,7 +340,7 @@
 			<key>Kind</key><string>MPEG audio file</string>
 			<key>Comments</key><string>j file</string>
 			<key>Sort Album</key><string>An Album</string>
-			<key>Location</key><string>file://localhost/C:/music/j.m4a</string>
+			<key>Location</key><string>file://localhost/{{musicdir}}/j.m4a</string>
 		</dict>
 		<key>96</key>
 		<dict>
@@ -373,7 +373,7 @@
 			<key>Kind</key><string>MPEG audio file</string>
 			<key>Comments</key><string>k file</string>
 			<key>Sort Album</key><string>An Album</string>
-			<key>Location</key><string>file://localhost/C:/music/k.m4a</string>
+			<key>Location</key><string>file://localhost/{{musicdir}}/k.m4a</string>
 		</dict>
 		<key>98</key>
 		<dict>
@@ -406,7 +406,7 @@
 			<key>Kind</key><string>MPEG audio file</string>
 			<key>Comments</key><string>l file</string>
 			<key>Sort Album</key><string>An Album</string>
-			<key>Location</key><string>file://localhost/C:/music/l.m4a</string>
+			<key>Location</key><string>file://localhost/{{musicdir}}/l.m4a</string>
 		</dict>
 		<key>100</key>
 		<dict>
@@ -440,7 +440,7 @@
 			<key>Comments</key><string>m file</string>
 			<key>Sort Name</key><string>M Song</string>
 			<key>Sort Album</key><string>An Album</string>
-			<key>Location</key><string>file://localhost/C:/music/m.m4a</string>
+			<key>Location</key><string>file://localhost/{{musicdir}}/m.m4a</string>
 		</dict>
 		<key>102</key>
 		<dict>
@@ -473,7 +473,7 @@
 			<key>Kind</key><string>MPEG audio file</string>
 			<key>Comments</key><string>n file</string>
 			<key>Sort Album</key><string>An Album</string>
-			<key>Location</key><string>file://localhost/C:/music/n.m4a</string>
+			<key>Location</key><string>file://localhost/{{musicdir}}/n.m4a</string>
 		</dict>
 	</dict>
 	<key>Playlists</key>
@@ -971,6 +971,6 @@
 			</array>
 		</dict>
 	</array>
-	<key>Music Folder</key><string>file://localhost/C:/Music/iTunes%20Media/</string>
+	<key>Music Folder</key><string>file://localhost/{{musicdir}}/iTunes%20Media/</string>
 </dict>
 </plist>
