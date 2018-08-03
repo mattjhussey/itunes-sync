@@ -7,7 +7,9 @@ from .itunessync import do_stuff
 
 def main():
     """Main entry point."""
-    parser = ArgumentParser(description='iTunes Sync. Syncs music in an iTunes library to a directory')
+    parser = ArgumentParser(
+        description='iTunes Sync. '
+        'Syncs music in an iTunes library to a directory')
     parser.add_argument('itunes_library')
     parser.add_argument('itunes_playlist')
 

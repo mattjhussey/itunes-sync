@@ -27,7 +27,7 @@ def test_music_copied_to_empty_dir(itunes_library_xml, tmpdir, local_test_dir):
 
     sys_args = ['exe.exe', str(itunes_library_xml), 'tocopy']
     with patch.object(sys, 'argv', sys_args), \
-         sdcard.as_cwd():
+            sdcard.as_cwd():
         main()
 
     # Expect empty directories to be removed
@@ -36,11 +36,16 @@ def test_music_copied_to_empty_dir(itunes_library_xml, tmpdir, local_test_dir):
     expect(todelete_noneed.check()).to.be.false()
 
     # Expect music to have been copied
-    expect((sdcard / 'Someone_' / 'An Album').join('a.mp3').check()).to.be.true()
-    expect((sdcard / 'Someone' / 'An Album').join('b.m4a').check()).to.be.true()
-    expect((sdcard / 'Someone' / 'An Album').join('c.m4a').check()).to.be.true()
-    expect((sdcard / 'Someone' / 'An Album').join('d.m4a').check()).to.be.true()
-    expect((sdcard / 'Someone' / 'An Album').join('e.m4a').check()).to.be.true()
+    expect(
+        (sdcard / 'Someone_' / 'An Album').join('a.mp3').check()).to.be.true()
+    expect(
+        (sdcard / 'Someone' / 'An Album').join('b.m4a').check()).to.be.true()
+    expect(
+        (sdcard / 'Someone' / 'An Album').join('c.m4a').check()).to.be.true()
+    expect(
+        (sdcard / 'Someone' / 'An Album').join('d.m4a').check()).to.be.true()
+    expect(
+        (sdcard / 'Someone' / 'An Album').join('e.m4a').check()).to.be.true()
 
     # Expect m3u files to have been deleted if old
     expect(sdcard.join('old.m3u')).to.be.false()
@@ -53,12 +58,22 @@ def test_music_copied_to_empty_dir(itunes_library_xml, tmpdir, local_test_dir):
     expect(sdcard.join('tocopy.m3u').check()).to.be.true()
 
     # Expect m3u files to contain correct data
-    expect(sdcard.join('Alter Bridge.m3u').readlines()).to.eq(local_test_dir.join('Alter Bridge.m3u').readlines())
-    expect(sdcard.join('Library.m3u').readlines()).to.eq(local_test_dir.join('Library.m3u').readlines())
-    expect(sdcard.join('Music.m3u').readlines()).to.eq(local_test_dir.join('Music.m3u').readlines())
-    expect(sdcard.join('something.m3u').readlines()).to.eq(local_test_dir.join('something.m3u').readlines())
-    expect(sdcard.join('tocopy.m3u').readlines()).to.eq(local_test_dir.join('tocopy.m3u').readlines())
-    
+    expect(
+        sdcard.join('Alter Bridge.m3u').readlines()). \
+        to.eq(local_test_dir.join('Alter Bridge.m3u').readlines())
+    expect(
+        sdcard.join('Library.m3u').readlines()). \
+        to.eq(local_test_dir.join('Library.m3u').readlines())
+    expect(
+        sdcard.join('Music.m3u').readlines()). \
+        to.eq(local_test_dir.join('Music.m3u').readlines())
+    expect(
+        sdcard.join('something.m3u').readlines()). \
+        to.eq(local_test_dir.join('something.m3u').readlines())
+    expect(
+        sdcard.join('tocopy.m3u').readlines()). \
+        to.eq(local_test_dir.join('tocopy.m3u').readlines())
+
 
 # Test with a playlist that doesn't exist
 
