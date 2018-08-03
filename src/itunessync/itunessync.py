@@ -151,7 +151,7 @@ def get_wanted_tracks(tracks):
 
 
 def delete_files(files):
-    """ Delete listed files """
+    """Delete listed files."""
     file_count = len(files)
     statement = "Deleting %%d of %d: %%s" % file_count
     for index, file_to_delete in enumerate(files):
@@ -160,7 +160,7 @@ def delete_files(files):
 
 
 def copy_files(copy_tasks):
-    """ Copy music files """
+    """Copy music files."""
     copy_count = len(copy_tasks)
     statement = "Copying %%d of %d: %%s" % copy_count
     for index, copy_task in enumerate(copy_tasks):
@@ -171,7 +171,7 @@ def copy_files(copy_tasks):
 
 
 def find_empty_directories():
-    """ Find directories with no contents """
+    """Find directories with no contents."""
     dirs = set()
     for root, directory, files in os.walk(u"."):
         if u"albumart.pamp" in files:
@@ -182,7 +182,7 @@ def find_empty_directories():
 
 
 def delete_directories(directories):
-    """ Remove listed directories """
+    """Remove listed directories."""
     directory_count = len(directories)
     statement = "Remove empty directory %%d of %d: %%s" % directory_count
     for index, directory in enumerate(directories):
@@ -191,7 +191,7 @@ def delete_directories(directories):
 
 
 def create_directories(directories):
-    """ Create directories to accomodate the music """
+    """Create directories to accomodate the music."""
     directory_count = len(directories)
     statement = "Creating directory %%d of %d: %%s" % directory_count
     for index, directory in enumerate(directories):
@@ -200,12 +200,12 @@ def create_directories(directories):
 
 
 def find_m3us():
-    """ Find all files with extension .m3u """
+    """Find all files with extension .m3u."""
     return get_extension_files(".m3u")
 
 
 def build_m3us(playlists, tracks):
-    """ Create m3us for playlists containing any of these files """
+    """Create m3us for playlists containing any of these files."""
     track_ids = set(tracks.keys())
     for playlist in playlists:
         # Play list is a dictionary
@@ -232,7 +232,7 @@ def build_m3us(playlists, tracks):
 
 
 def do_stuff(xml_path, playlist_name):
-    """ Copy music in playlist to cwd """
+    """Copy music in playlist to cwd."""
     print "Reading iTunes Library"
     library = read_itunes_library(xml_path)
     print "Finding %s Playlist" % playlist_name

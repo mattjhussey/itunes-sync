@@ -6,7 +6,7 @@ from .itunessync import do_stuff
 
 
 def main():
-    """Main entry point."""
+    """Run a sync from the command line."""
     parser = ArgumentParser(
         description='iTunes Sync. '
         'Syncs music in an iTunes library to a directory')

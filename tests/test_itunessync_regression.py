@@ -1,3 +1,4 @@
+"""Regression tests for itunessync."""
 from os.path import dirname, realpath
 import py
 import pytest
@@ -7,7 +8,8 @@ from robber import expect
 from itunessync.__main__ import main
 
 
-def test_music_copied_to_empty_dir(itunes_library_xml, tmpdir, local_test_dir):
+def test_music_sync(itunes_library_xml, tmpdir, local_test_dir):
+    """Test running a sync on a known directory."""
     # Create populated sdcard directory
     sdcard = tmpdir.mkdir('sdcard')
 
@@ -80,11 +82,19 @@ def test_music_copied_to_empty_dir(itunes_library_xml, tmpdir, local_test_dir):
 
 @pytest.fixture
 def local_test_dir():
+    """Return the local test directory.
+
+    Used to reference test files.
+    """
     return py.path.local(dirname(realpath(__file__)))
 
 
 @pytest.fixture
 def itunes_library_xml(local_test_dir, tmpdir):
+    """Return an example itunes library file.
+
+    The itunes library references files in the test directory.
+    """
     # Copy the xml library to the temporary directory
     real_library_xml = local_test_dir / 'itunes_valid.xml'
     target = tmpdir / 'itunes_valid.xml'
