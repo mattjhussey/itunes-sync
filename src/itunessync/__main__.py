@@ -20,8 +20,8 @@ def main():
 
 if __name__ == '__main__':
     import logging.config
-    log_path = pkg_resources.resource_filename(__name__, "logging.conf")
-    logging.config.fileConfig(log_path,
+    LOG_PATH = pkg_resources.resource_filename(__name__, "logging.conf")
+    logging.config.fileConfig(LOG_PATH,
                               disable_existing_loggers=False)
 
     print main()

@@ -60,44 +60,80 @@ def check(expected):
 def read_itunes_library(xml_path):
     """Read the itunes library into memory."""
     context = ET.iterparse(xml_path, events=("start", "end"))
+    print context
 
-    key = "root"
+    def read_array(context):
+        """Return a list of values.
+
+        Return all values within an array tag.
+        """
+        my_list = []
+        value = read_value(context)
+        while value is not None:
+            my_list.append(value)
+            value = read_value(context)
+        return my_list
+
+    def read_dict(context):
+        """Return a dictionary of key-value pairs.
+
+        Returns all key-value pairs within a dict tag.
+        """
+        my_dict = dict()
+        event, elem = next(context)
+        while not (event == "end" and elem.tag == "dict"):
+            # Get end of the key
+            event, elem = next(context)
+            assert event == "end" and elem.tag == "key"
+
+            # Record the key
+            key = elem.text
+
+            my_dict[key] = read_value(context)
+
+            # Move to next element
+            event, elem = next(context)
+
+        return my_dict
+
+    def read_root(context):
+        """Return a root node.
+
+        Skims off the plist tag and returns the root dict.
+        """
+        # Skim off the plist
+        next(context)
+
+        # Skim off beginning of the dictionary
+        next(context)
+
+        return read_dict(context)
+
+    def read_value(context):
+        """Return a read value.
+
+        Values are either a dict, array else a raw text value.
+        """
+        event, elem = next(context)
+        if elem.tag == "dict":
+            # I am a dictionary
+            return read_dict(context)
+        elif elem.tag == "array":
+            if event == "start":
+                # I am an array
+                return read_array(context)
+
+            # I am the end of an array
+            return None
+
+        # I am a primitive tag
+        # Get end tag
+        event, elem = next(context)
+        print event, elem
+        return elem.text
+
     root_dict = dict()
-    active_dict = root_dict
-    path = []
-
-    for event, elem in context:
-        if elem.tag == "plist":
-            continue
-        if event == "start":
-            if elem.tag == "key":
-                key = elem.text
-            else:
-                if elem.tag == "dict":
-                    new_dict = dict()
-                    if isinstance(active_dict, dict):
-                        active_dict[key] = new_dict
-                    else:
-                        active_dict.append(new_dict)
-                    path.append(active_dict)
-                    active_dict = new_dict
-                elif elem.tag == "array":
-                    new_array = []
-                    active_dict[key] = new_array
-                    path.append(active_dict)
-                    active_dict = new_array
-                else:
-                    if elem.text is not None:
-                        active_dict[key] = elem.text
-        else:  # event == "end"
-            if elem.tag == "key":
-                key = elem.text
-            elif elem.tag == "dict" or elem.tag == "array":
-                active_dict = path.pop()
-            else:
-                if elem.text is not None:
-                    active_dict[key] = elem.text
-            elem.clear()
+    root_dict["root"] = read_root(context)
 
     return root_dict
 
@@ -115,35 +151,45 @@ def get_wanted_track_ids(playlist):
     return track_ids
 
 
-def get_wanted_tracks(tracks):
+def get_wanted_tracks(library, playlist_name):
     """Get details of all wanted tracks."""
+    print "Finding %s Playlist" % playlist_name
+    s3_list = [playlist
+               for playlist in library["root"]["Playlists"]
+               if playlist["Name"] == playlist_name][0]
+
+    print "Finding wanted Track Ids"
+    track_ids = get_wanted_track_ids(s3_list)
+
+    print "Finding wanted Tracks"
+    tracks = dict([(track_id, value)
+                   for track_id, value in library["root"]["Tracks"].iteritems()
+                   if track_id in track_ids])
+
     # Find each file to move
     track_info = dict()
     for track_id, track in tracks.iteritems():
 
-        album = track["Album"]
-        artist = track["Artist"]
-        location = urllib.unquote(track["Location"][17:])
-        time = track["Total Time"][:-3]
-
         track_data = dict()
-        track_data["Time"] = time
-        track_data["Album"] = album
-        track_data["Artist"] = artist
+        track_data["Time"] = track["Total Time"][:-3]
+        track_data["Album"] = track["Album"]
+        track_data["Artist"] = track["Artist"]
 
+        location = urllib.unquote(track["Location"][17:])
         track_name = location.split("/")[-1]
 
         # Move file from location to /artist/album/track_name
-        directory = "%s/%s" % (sanitize_string(artist), sanitize_string(album))
-        target = "%s/%s" % (directory, unicode(track_name, "utf8"))
-
-        set_path = os.path.join(".\\", sanitize_string(artist))
-        set_path = os.path.join(set_path, sanitize_string(album))
+        set_path = os.path.join(".\\", sanitize_string(track_data["Artist"]))
+        set_path = os.path.join(set_path, sanitize_string(track_data["Album"]))
         set_path = os.path.join(set_path, track_name.decode('utf-8'))
 
-        track_data["Path"] = target
+        track_data["Directory"] = "%s/%s" % (
+            sanitize_string(track_data["Artist"]),
+            sanitize_string(track_data["Album"]))
+        track_data["Path"] = "%s/%s" % (
+            track_data["Directory"],
+            unicode(track_name, "utf8"))
         track_data["Source"] = unicode(location, "utf8")
-        track_data["Directory"] = directory
         track_data["WalkPath"] = set_path.lower()
 
         track_info[track_id] = track_data
@@ -181,11 +227,13 @@ def find_empty_directories():
     return dirs
 
 
-def delete_directories(directories):
-    """Remove listed directories."""
-    directory_count = len(directories)
+def delete_empty_directories():
+    """Remove empty directories."""
+    empty_dirs = find_empty_directories()
+
+    directory_count = len(empty_dirs)
     statement = "Remove empty directory %%d of %d: %%s" % directory_count
-    for index, directory in enumerate(directories):
+    for index, directory in enumerate(empty_dirs):
         print statement % (index, repr(directory))
         shutil.rmtree(directory)
 
@@ -231,54 +279,63 @@ def build_m3us(playlists, tracks):
                             m3u_file.write("%s\n" % track_path)
 
 
-def do_stuff(xml_path, playlist_name):
-    """Copy music in playlist to cwd."""
-    print "Reading iTunes Library"
-    library = read_itunes_library(xml_path)
-    print "Finding %s Playlist" % playlist_name
-    s3_list = [playlist
-               for playlist in library["root"]["Playlists"]
-               if playlist["Name"] == playlist_name][0]
-    print "Finding wanted Track Ids"
-    track_ids = get_wanted_track_ids(s3_list)
-    print "Finding wanted Tracks"
-    tracks = dict([(track_id, value)
-                   for track_id, value in library["root"]["Tracks"].iteritems()
-                   if track_id in track_ids])
-    print "Extracting Track Info"
-    track_info = get_wanted_tracks(tracks)
+def copy_music(track_info):
+    """Copy wanted music and remove unwanted."""
     print "Finding existing files"
     existing_files = get_m4a_files()
+
     print "Finding excess files"
     source_files = set([track_data["WalkPath"]
                         for track_data in track_info.itervalues()])
-    excess_files = existing_files.difference(source_files)
+
     print "Deleting excess files"
+    excess_files = existing_files.difference(source_files)
     delete_files(excess_files)
+
     print "Creating required directories"
     required_directories = set(
         [track_data["Directory"]
          for track_data in track_info.itervalues()
          if not os.path.exists(track_data["Directory"])])
     create_directories(required_directories)
+
     print "Copying new files"
     existing_files = existing_files.difference(excess_files)
     copy_tasks = dict([(ti["Path"], ti["Source"])
                        for ti in track_info.itervalues()
                        if ti["WalkPath"] not in existing_files])
     copy_files(copy_tasks)
-    print "Find empty directories"
-    empty_dirs = find_empty_directories()
+
     print "Deleting empty directories"
-    delete_directories(empty_dirs)
+    delete_empty_directories()
+
+    print "Checking"
+    check(source_files)
+
+    print "%d to copy and %d exist" % (len(source_files), len(get_m4a_files()))
+
+
+def copy_playlists(library, track_info):
+    """Copy playlists containing wanted tracks."""
     print "Deleting existing m3us"
     existing_m3us = find_m3us()
     delete_files(existing_m3us)
+
     print "Writing new m3us"
     playlists = library["root"]["Playlists"]
     track_paths = dict([(track_id, track["Path"])
                         for track_id, track in track_info.iteritems()])
     build_m3us(playlists, track_paths)
-    print "Checking"
-    check(source_files)
-    print "%d to copy and %d exist" % (len(source_files), len(get_m4a_files()))
+
+
+def do_stuff(xml_path, playlist_name):
+    """Copy music in playlist to cwd."""
+    print "Reading iTunes Library"
+    library = read_itunes_library(xml_path)
+
+    print "Extracting Track Info"
+    track_info = get_wanted_tracks(library, playlist_name)
+
+    copy_music(track_info)
+
+    copy_playlists(library, track_info)
