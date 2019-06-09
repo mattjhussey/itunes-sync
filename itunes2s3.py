@@ -1,3 +1,4 @@
+#!/usr/bin/env python2.7
 import xml.etree.ElementTree as ET
 import shutil
 import os
